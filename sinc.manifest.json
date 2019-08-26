@@ -2,92 +2,82 @@
   "tables": {
     "sys_script_include": {
       "records": {
-        "CICDUtilsMS": {
+        "SincUtilsMS": {
           "files": [
             {
               "name": "script",
               "type": "js"
             }
           ],
-          "name": "CICDUtilsMS",
-          "sys_id": "43a1df9fdba2f3004a8da5094b9619c7"
+          "name": "SincUtilsMS",
+          "sys_id": "4da2c589db63fb004a8da5094b9619a9"
         },
-        "CICDUtils": {
+        "SincUtils": {
           "files": [
             {
               "name": "script",
               "type": "js"
             }
           ],
-          "name": "CICDUtils",
-          "sys_id": "45ebd397dbe2f3004a8da5094b961916"
+          "name": "SincUtils",
+          "sys_id": "b3828589db63fb004a8da5094b9619b6"
         }
       }
     },
     "sys_ws_operation": {
       "records": {
-        "getCurrentScope": {
+        "Get App List": {
           "files": [
             {
               "name": "operation_script",
               "type": "js"
             }
           ],
-          "name": "getCurrentScope",
-          "sys_id": "00376942dbfe7b004a8da5094b96194d"
+          "name": "Get App List",
+          "sys_id": "041449c9db63fb004a8da5094b9619fe"
         },
-        "getManifestWithFiles": {
+        "Bulk Download": {
           "files": [
             {
               "name": "operation_script",
               "type": "js"
             }
           ],
-          "name": "getManifestWithFiles",
-          "sys_id": "2101106fdb66f3004a8da5094b96191b"
+          "name": "Bulk Download",
+          "sys_id": "16338d89db63fb004a8da5094b961939"
         },
-        "getManifest": {
+        "Get Manifest With Files": {
           "files": [
             {
               "name": "operation_script",
               "type": "js"
             }
           ],
-          "name": "getManifest",
-          "sys_id": "2d8fbfdfdb26f3004a8da5094b961997"
+          "name": "Get Manifest With Files",
+          "sys_id": "1d05010ddb63fb004a8da5094b96190c"
         },
-        "getManifestFromConfig": {
+        "Get Current Scope": {
           "files": [
             {
               "name": "operation_script",
               "type": "js"
             }
           ],
-          "name": "getManifestFromConfig",
-          "sys_id": "5629c587db1bbb00ee7c2f625b961901"
+          "name": "Get Current Scope",
+          "sys_id": "3654cdc9db63fb004a8da5094b961918"
         },
-        "bulkDownload": {
+        "Get Manifest From Config": {
           "files": [
             {
               "name": "operation_script",
               "type": "js"
             }
           ],
-          "name": "bulkDownload",
-          "sys_id": "8b168394db3e77004a8da5094b9619cf"
-        },
-        "getAppList": {
-          "files": [
-            {
-              "name": "operation_script",
-              "type": "js"
-            }
-          ],
-          "name": "getAppList",
-          "sys_id": "fc4902c6db32bb004a8da5094b9619ab"
+          "name": "Get Manifest From Config",
+          "sys_id": "e2b4410ddb63fb004a8da5094b9619ab"
         }
       }
     }
   },
-  "scope": "x_nuvo_x"
+  "scope": "x_nuvo_sinc"
 }
