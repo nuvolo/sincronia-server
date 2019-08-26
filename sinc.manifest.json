@@ -1,0 +1,93 @@
+{
+  "tables": {
+    "sys_script_include": {
+      "records": {
+        "CICDUtilsMS": {
+          "files": [
+            {
+              "name": "script",
+              "type": "js"
+            }
+          ],
+          "name": "CICDUtilsMS",
+          "sys_id": "43a1df9fdba2f3004a8da5094b9619c7"
+        },
+        "CICDUtils": {
+          "files": [
+            {
+              "name": "script",
+              "type": "js"
+            }
+          ],
+          "name": "CICDUtils",
+          "sys_id": "45ebd397dbe2f3004a8da5094b961916"
+        }
+      }
+    },
+    "sys_ws_operation": {
+      "records": {
+        "getCurrentScope": {
+          "files": [
+            {
+              "name": "operation_script",
+              "type": "js"
+            }
+          ],
+          "name": "getCurrentScope",
+          "sys_id": "00376942dbfe7b004a8da5094b96194d"
+        },
+        "getManifestWithFiles": {
+          "files": [
+            {
+              "name": "operation_script",
+              "type": "js"
+            }
+          ],
+          "name": "getManifestWithFiles",
+          "sys_id": "2101106fdb66f3004a8da5094b96191b"
+        },
+        "getManifest": {
+          "files": [
+            {
+              "name": "operation_script",
+              "type": "js"
+            }
+          ],
+          "name": "getManifest",
+          "sys_id": "2d8fbfdfdb26f3004a8da5094b961997"
+        },
+        "getManifestFromConfig": {
+          "files": [
+            {
+              "name": "operation_script",
+              "type": "js"
+            }
+          ],
+          "name": "getManifestFromConfig",
+          "sys_id": "5629c587db1bbb00ee7c2f625b961901"
+        },
+        "bulkDownload": {
+          "files": [
+            {
+              "name": "operation_script",
+              "type": "js"
+            }
+          ],
+          "name": "bulkDownload",
+          "sys_id": "8b168394db3e77004a8da5094b9619cf"
+        },
+        "getAppList": {
+          "files": [
+            {
+              "name": "operation_script",
+              "type": "js"
+            }
+          ],
+          "name": "getAppList",
+          "sys_id": "fc4902c6db32bb004a8da5094b9619ab"
+        }
+      }
+    }
+  },
+  "scope": "x_nuvo_x"
+}

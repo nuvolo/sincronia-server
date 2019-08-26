@@ -1,0 +1,33 @@
+{
+  "name": "sincronia-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuvolo/sincronia-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nuvolo/sincronia-server/issues"
+  },
+  "homepage": "https://github.com/nuvolo/sincronia-server#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@sincronia/babel-plugin": "^0.1.0",
+    "@sincronia/babel-plugin-remove-modules": "^0.1.0",
+    "@sincronia/babel-preset-servicenow": "^0.1.0",
+    "@sincronia/core": "file:../sincronia-test/packages/core",
+    "@sincronia/prettier-plugin": "^0.1.0",
+    "@sincronia/types": "^0.1.0",
+    "@sincronia/typescript-plugin": "^0.1.0"
+  }
+}
