@@ -17,21 +17,22 @@
   },
   "homepage": "https://github.com/nuvolo/sincronia-server#readme",
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-proposal-class-properties": "^7.5.5",
-    "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/preset-typescript": "^7.3.3",
-    "@sincronia/babel-plugin": "^0.2.0",
-    "@sincronia/babel-plugin-remove-modules": "^0.2.0",
-    "@sincronia/babel-preset-servicenow": "^0.2.0",
-    "@sincronia/prettier-plugin": "^0.2.0",
-    "@sincronia/types": "^0.1.0",
-    "@sincronia/typescript-plugin": "^0.2.0",
+    "@babel/cli": "^7.7.0",
+    "@babel/core": "^7.7.2",
+    "@babel/plugin-proposal-class-properties": "^7.7.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
+    "@babel/preset-env": "^7.7.1",
+    "@babel/preset-typescript": "^7.7.2",
+    "@nuvolo/servicenow-types": "0.0.2",
+    "@sincronia/babel-plugin": "^0.2.1",
+    "@sincronia/babel-plugin-remove-modules": "^0.2.3",
+    "@sincronia/babel-preset-servicenow": "^0.2.2",
+    "@sincronia/prettier-plugin": "^0.2.2",
+    "@sincronia/types": "^0.1.1",
+    "@sincronia/typescript-plugin": "^0.2.1",
     "@types/servicenow": "^10.0.1"
   },
   "dependencies": {
-    "@sincronia/core": "^0.2.0"
+    "@sincronia/core": "^0.2.10"
   }
 }
