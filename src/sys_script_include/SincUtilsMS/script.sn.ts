@@ -5,7 +5,8 @@ import {
   buildTableMapConfig,
   fileMapConfig,
   getTablesConfig,
-  ITableOptions
+  ITableOptions,
+  ITableOptionsMap
 } from "../../../types";
 import {
   GlideAggregate,
@@ -247,18 +248,22 @@ export default class SincUtilsMS {
     }
     return fieldList;
   }
-  processMissingFiles(missingObj: SN.MissingFileTableMap): SN.TableMap {
+  processMissingFiles(
+    missingObj: SN.MissingFileTableMap,
+    tableOptions: ITableOptionsMap
+  ): SN.TableMap {
     let fileTableMap: SN.TableMap = {};
     for (let tableName in missingObj) {
       let tableGR = new GlideRecord(tableName);
       let recordMap = missingObj[tableName];
+      let tableOpts = tableOptions[tableName] || {};
       let tableMap: SN.TableConfig = {
         records: {}
       };
       for (let recordID in recordMap) {
         if (tableGR.get(recordID)) {
           let metaRecord: SN.MetaRecord = {
-            name: tableGR.getDisplayValue(),
+            name: this.generateRecordName(tableGR, tableOpts),
             files: [],
             sys_id: tableGR.getValue("sys_id")
           };
@@ -267,7 +272,9 @@ export default class SincUtilsMS {
             file.content = tableGR.getValue(file.name);
             metaRecord.files.push(file);
           }
-          tableMap.records[tableGR.getDisplayValue()] = metaRecord;
+          tableMap.records[
+            this.generateRecordName(tableGR, tableOpts)
+          ] = metaRecord;
         }
       }
       fileTableMap[tableName] = tableMap;
