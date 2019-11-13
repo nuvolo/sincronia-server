@@ -23,7 +23,7 @@ export interface ExInProp {
 
 export interface ITableOptions {
   displayField?: string;
-  differentiatorField?: string;
+  differentiatorField?: string | string[];
   query?: string;
 }
 
