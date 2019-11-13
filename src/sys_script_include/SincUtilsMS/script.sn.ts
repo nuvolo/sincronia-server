@@ -1,47 +1,20 @@
 import { SN, Sinc } from "@sincronia/types";
+import {
+  fieldMap,
+  manifestConfig,
+  buildTableMapConfig,
+  fileMapConfig,
+  getTablesConfig,
+  ITableOptions,
+  ITableOptionsMap
+} from "../../../types";
+import {
+  GlideAggregate,
+  GlideRecord,
+  gs,
+  GlideSession
+} from "@nuvolo/servicenow-types";
 
-interface fieldMap {
-  [fieldName: string]: SN.File;
-}
-
-interface ExInProp {
-  [table: string]: boolean | fieldMap;
-}
-interface manifestConfig {
-  scopeName: string;
-  getContents?: boolean;
-  includes: ExInProp;
-  excludes: ExInProp;
-}
-
-interface buildTableMapConfig {
-  tableName: string;
-  scopeId: string;
-  getContents: boolean;
-  includes: ExInProp;
-  excludes: ExInProp;
-}
-
-interface fileMapConfig {
-  tableName: string;
-  includes: ExInProp;
-  excludes: ExInProp;
-}
-
-interface getTablesConfig {
-  scopeId: string;
-  includes: ExInProp;
-  excludes: ExInProp;
-}
-
-declare class GlideAggregate {
-  constructor(table: string);
-  addQuery(field: string, value: string): void;
-  groupBy(field: string): void;
-  query(): void;
-  next(): boolean;
-  getValue(field: string): string;
-}
 export default class SincUtilsMS {
   type: string;
   typeMap: SN.TypeMap;
@@ -69,14 +42,17 @@ export default class SincUtilsMS {
     const { scopeId, includes, excludes } = config;
     let tables: string[] = [];
     let appFilesAgg = new GlideAggregate("sys_metadata");
-    appFilesAgg.addQuery("sys_scope", scopeId);
+    appFilesAgg.addQuery("sys_scope", "=", scopeId);
     appFilesAgg.groupBy("sys_class_name");
     appFilesAgg.query();
     while (appFilesAgg.next()) {
       let tableName = appFilesAgg.getValue("sys_class_name");
       let tableExcluded =
-        tableName in excludes && typeof excludes[tableName] !== "object" && excludes[tableName] !== false;
-      let tableIncluded = tableName in includes && includes[tableName] !== false;
+        tableName in excludes &&
+        typeof excludes[tableName] !== "object" &&
+        excludes[tableName] !== false;
+      let tableIncluded =
+        tableName in includes && includes[tableName] !== false;
       if (!tableExcluded || tableIncluded) {
         tables.push(tableName);
       }
@@ -85,7 +61,13 @@ export default class SincUtilsMS {
   }
 
   getManifest(config: manifestConfig) {
-    const { scopeName, getContents = false, includes, excludes } = config;
+    const {
+      scopeName,
+      getContents = false,
+      includes,
+      excludes,
+      tableOptions = {}
+    } = config;
     const scopeId = this.getScopeId(scopeName);
     let tables: SN.TableMap = {};
     let tableNames = this.getTableNames({ scopeId, includes, excludes });
@@ -96,7 +78,8 @@ export default class SincUtilsMS {
         scopeId,
         includes,
         excludes,
-        getContents
+        getContents,
+        tableOptions: tableOptions[tableName] || {}
       });
       let records = Object.keys(tableMap.records);
       if (records.length === 0) {
@@ -111,7 +94,14 @@ export default class SincUtilsMS {
   }
 
   buildTableMap(config: buildTableMapConfig) {
-    const { tableName, scopeId, getContents, includes, excludes } = config;
+    const {
+      tableName,
+      scopeId,
+      getContents,
+      includes,
+      excludes,
+      tableOptions
+    } = config;
     let results = {
       records: {}
     };
@@ -126,6 +116,9 @@ export default class SincUtilsMS {
     let records: SN.TableConfigRecords = {};
     let recGR = new GlideRecord(tableName);
     recGR.addQuery("sys_scope", scopeId);
+    if (tableOptions.query !== undefined) {
+      recGR.addEncodedQuery(tableOptions.query);
+    }
     recGR.query();
     while (recGR.next()) {
       let files = Object.keys(fieldListForTable).map(key => {
@@ -140,10 +133,7 @@ export default class SincUtilsMS {
         return file;
       });
 
-      let recName = (recGR.getDisplayValue() || recGR.getValue("sys_id")).replace(/[\/\\]/g, "〳");
-      if (!recName || recName === "") {
-        recName = recGR.getValue("sys_id");
-      }
+      let recName = this.generateRecordName(recGR, tableOptions);
       records[recName] = {
         files,
         name: recName,
@@ -155,6 +145,24 @@ export default class SincUtilsMS {
     };
 
     return tableConfig;
+  }
+
+  generateRecordName(recGR: GlideRecord, tableOptions: ITableOptions) {
+    let recordName = recGR.getDisplayValue() || recGR.getValue("sys_id");
+    if (tableOptions.displayField !== undefined) {
+      recordName = recGR
+        .getElement(tableOptions.displayField)
+        .getDisplayValue();
+    }
+    if (tableOptions.differentiatorField !== undefined) {
+      recordName = `${recordName} (${recGR
+        .getElement(tableOptions.differentiatorField)
+        .getDisplayValue()})`;
+    }
+    if (!recordName || recordName === "") {
+      recordName = recGR.getValue("sys_id");
+    }
+    return recordName.replace(/[\/\\]/g, "〳");
   }
 
   getFieldExcludes(config: fileMapConfig) {
@@ -240,18 +248,22 @@ export default class SincUtilsMS {
     }
     return fieldList;
   }
-  processMissingFiles(missingObj: SN.MissingFileTableMap): SN.TableMap {
+  processMissingFiles(
+    missingObj: SN.MissingFileTableMap,
+    tableOptions: ITableOptionsMap
+  ): SN.TableMap {
     let fileTableMap: SN.TableMap = {};
     for (let tableName in missingObj) {
       let tableGR = new GlideRecord(tableName);
       let recordMap = missingObj[tableName];
+      let tableOpts = tableOptions[tableName] || {};
       let tableMap: SN.TableConfig = {
         records: {}
       };
       for (let recordID in recordMap) {
         if (tableGR.get(recordID)) {
           let metaRecord: SN.MetaRecord = {
-            name: tableGR.getDisplayValue(),
+            name: this.generateRecordName(tableGR, tableOpts),
             files: [],
             sys_id: tableGR.getValue("sys_id")
           };
@@ -260,7 +272,9 @@ export default class SincUtilsMS {
             file.content = tableGR.getValue(file.name);
             metaRecord.files.push(file);
           }
-          tableMap.records[tableGR.getDisplayValue()] = metaRecord;
+          tableMap.records[
+            this.generateRecordName(tableGR, tableOpts)
+          ] = metaRecord;
         }
       }
       fileTableMap[tableName] = tableMap;
@@ -269,7 +283,7 @@ export default class SincUtilsMS {
   }
 
   getCurrentScope() {
-    let session = gs.getSession();
+    let session = (gs.getSession() as unknown) as GlideSession;
     if (typeof session !== "string") {
       let scopeID = session.getCurrentApplicationId();
       let appGR = new GlideRecord("sys_app");

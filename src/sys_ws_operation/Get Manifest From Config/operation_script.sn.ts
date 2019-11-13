@@ -1,21 +1,15 @@
 import { SN } from "@sincronia/types";
 import SincUtils from "../../sys_script_include/SincUtils/script.sn";
-interface gmfcRequest {
-  body: {
-    data: {
-      includes: { [key: string]: boolean | { [fieldName: string]: SN.File } };
-      excludes: { [key: string]: boolean | { [fieldName: string]: SN.File } };
-    };
-  };
-  pathParams: {
-    scope: string;
-  };
-}
-declare var request: gmfcRequest;
-declare var response: any;
-(function process(/*RESTAPIRequest*/ request: gmfcRequest, /*RESTAPIResponse*/ response) {
+import { sn_ws } from "@nuvolo/servicenow-types";
+import { IGetManifestRequest } from "../../../types";
+declare var request: IGetManifestRequest;
+declare var response: sn_ws.RESTAPIResponse;
+(function process(
+  request: IGetManifestRequest,
+  response: sn_ws.RESTAPIResponse
+) {
   let utils = new SincUtils();
-  let { includes, excludes } = request.body.data;
+  let { includes, excludes, tableOptions = {} } = request.body.data;
   let { scope: scopeName } = request.pathParams;
-  return utils.getManifest({ scopeName, includes, excludes });
+  return utils.getManifest({ scopeName, includes, excludes, tableOptions });
 })(request, response);
