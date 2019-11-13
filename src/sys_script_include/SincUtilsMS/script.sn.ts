@@ -93,7 +93,14 @@ export default class SincUtilsMS {
   }
 
   buildTableMap(config: buildTableMapConfig) {
-    const { tableName, scopeId, getContents, includes, excludes } = config;
+    const {
+      tableName,
+      scopeId,
+      getContents,
+      includes,
+      excludes,
+      tableOptions
+    } = config;
     let results = {
       records: {}
     };
@@ -108,6 +115,9 @@ export default class SincUtilsMS {
     let records: SN.TableConfigRecords = {};
     let recGR = new GlideRecord(tableName);
     recGR.addQuery("sys_scope", scopeId);
+    if (tableOptions.query !== undefined) {
+      recGR.addEncodedQuery(tableOptions.query);
+    }
     recGR.query();
     while (recGR.next()) {
       let files = Object.keys(fieldListForTable).map(key => {
@@ -122,12 +132,7 @@ export default class SincUtilsMS {
         return file;
       });
 
-      let recName = (
-        recGR.getDisplayValue() || recGR.getValue("sys_id")
-      ).replace(/[\/\\]/g, "〳");
-      if (!recName || recName === "") {
-        recName = recGR.getValue("sys_id");
-      }
+      let recName = this.generateRecordName(recGR, tableOptions);
       records[recName] = {
         files,
         name: recName,
@@ -153,7 +158,10 @@ export default class SincUtilsMS {
         .getElement(tableOptions.differentiatorField)
         .getDisplayValue()})`;
     }
-    return recordName;
+    if (!recordName || recordName === "") {
+      recordName = recGR.getValue("sys_id");
+    }
+    return recordName.replace(/[\/\\]/g, "〳");
   }
 
   getFieldExcludes(config: fileMapConfig) {
