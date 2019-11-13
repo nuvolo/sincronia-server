@@ -12,7 +12,8 @@ import {
   GlideAggregate,
   GlideRecord,
   gs,
-  GlideSession
+  GlideSession,
+  GlideTableHierarchy
 } from "@nuvolo/servicenow-types";
 
 export default class SincUtilsMS {
@@ -116,6 +117,7 @@ export default class SincUtilsMS {
     let records: SN.TableConfigRecords = {};
     let recGR = new GlideRecord(tableName);
     recGR.addQuery("sys_scope", scopeId);
+    recGR.addQuery("sys_class_name", tableName);
     if (tableOptions.query !== undefined) {
       recGR.addEncodedQuery(tableOptions.query);
     }
@@ -155,9 +157,22 @@ export default class SincUtilsMS {
         .getDisplayValue();
     }
     if (tableOptions.differentiatorField !== undefined) {
-      recordName = `${recordName} (${recGR
-        .getElement(tableOptions.differentiatorField)
-        .getDisplayValue()})`;
+      if (typeof tableOptions.differentiatorField === "string") {
+        recordName = `${recordName} (${recGR
+          .getElement(tableOptions.differentiatorField)
+          .getDisplayValue()})`;
+      }
+      if (typeof tableOptions.differentiatorField === "object") {
+        let diffArr = tableOptions.differentiatorField;
+        for (let i = 0; i < diffArr.length; i++) {
+          let field = diffArr[i];
+          let val = recGR.getElement(field).getDisplayValue();
+          if (val !== undefined && val !== "") {
+            recordName = `${recordName} (${field}:${val})`;
+            break;
+          }
+        }
+      }
     }
     if (!recordName || recordName === "") {
       recordName = recGR.getValue("sys_id");
@@ -207,7 +222,14 @@ export default class SincUtilsMS {
     const { tableName, includes, excludes } = config;
     let fieldList: { [fieldName: string]: SN.File } = {};
     let dictGR = new GlideRecord("sys_dictionary");
-    dictGR.addQuery("name", tableName);
+    const tableHierarchy = new GlideTableHierarchy(tableName);
+    if (tableHierarchy.isBaseClass() || tableHierarchy.isSoloClass()) {
+      dictGR.addQuery("name", tableName);
+    } else {
+      const tableList: string[] = tableHierarchy.getTables();
+      const tableEQ = tableList.map(table => "name=" + table).join("^OR");
+      dictGR.addEncodedQuery(tableEQ);
+    }
     //determine excluded fields
     let fieldExcludes = this.getFilteredExcludes(config);
     if (fieldExcludes.length > 0) {
