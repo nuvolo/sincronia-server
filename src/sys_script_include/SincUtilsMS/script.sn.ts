@@ -37,28 +37,6 @@ export default class SincUtilsMS {
     };
   }
 
-  getATFmanifest(scopeName: string) {
-    let scopeId = this.getScopeId(scopeName);
-    let gr = new GlideRecord<ATFTable>("sys_atf_step");
-    gr.addQuery("sys_scope", scopeId);
-    gr.query();
-    let records: SN.TableConfigRecords = {};
-    while (gr.next()) {
-      let id = gr.getValue("sys_id") || "";
-      records[id] = {
-        files: [
-          {
-            name: "atf_step",
-            type: "js"
-          }
-        ],
-        name: id,
-        sys_id: id
-      };
-    }
-    return { records: records };
-  }
-
   getScopeId(scopeName: string) {
     let appGR = new GlideRecord<AppTable>("sys_app");
     appGR.get("scope", scopeName);
@@ -85,6 +63,41 @@ export default class SincUtilsMS {
       }
     }
     return tables;
+  }
+
+  getServerScriptId() {
+    let gr = new GlideRecord<RecordTable>("sys_atf_step_config");
+    gr.addQuery("name", "Run Server Side Script");
+    gr.query();
+    gr.next();
+    return gr.getValue("sys_id");
+  }
+
+  getATFmanifest(scopeName: string) {
+    let scopeId = this.getScopeId(scopeName);
+    let scriptId = this.getServerScriptId();
+    let gr = new GlideRecord<ATFTable>("sys_atf_step");
+    gr.addQuery("sys_scope", scopeId);
+    gr.addQuery("step_config", scriptId);
+    gr.query();
+    let records: SN.TableConfigRecords = {};
+    while (gr.next()) {
+      let id = gr.getValue("sys_id") || "";
+      let script = gr.inputs.script;
+      script = script ? script.toString() : "";
+      records[id] = {
+        files: [
+          {
+            name: "inputs.script",
+            type: "js",
+            content: script
+          }
+        ],
+        name: id,
+        sys_id: id
+      };
+    }
+    return { records: records };
   }
 
   getManifest(config: manifestConfig) {
@@ -308,12 +321,13 @@ export default class SincUtilsMS {
   ): SN.TableMap {
     let fileTableMap: SN.TableMap = {};
     for (let tableName in missingObj) {
+      gs.info(tableName);
       let tableGR = new GlideRecord<RecordTable>(tableName);
       let recordMap = missingObj[tableName];
       let tableOpts = tableOptions[tableName] || {};
-      if (tableName == "sys_atf_step") {
+      if (tableName === "sys_atf_step") {
         tableOpts = {
-          differentiatorField: "sys_id"
+          displayField: "sys_id"
         };
       }
       let tableMap: SN.TableConfig = {
@@ -328,7 +342,7 @@ export default class SincUtilsMS {
           };
           for (let i = 0; i < recordMap[recordID].length; i++) {
             let file = recordMap[recordID][i];
-            if (file.name === "atf_step") {
+            if (tableName === "sys_atf_step") {
               let script = tableGR.inputs.script;
               file.content = script ? script.toString() : "";
             } else {
@@ -371,5 +385,13 @@ export default class SincUtilsMS {
       });
     }
     return results;
+  }
+
+  pushATFfile(sys_id: string, script: string) {
+    let gr = new GlideRecord<ATFTable>("sys_atf_step");
+    gr.get(sys_id);
+    gr.inputs.script = script;
+    if (gr.update() != null) return true;
+    return false;
   }
 }

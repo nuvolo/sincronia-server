@@ -17,6 +17,10 @@ export interface IGetManifestOptions {
   includes: ExInProp;
   excludes: ExInProp;
 }
+export interface IPushATFoptions {
+  sys_id: string;
+  file: string;
+}
 
 export interface ExInProp {
   [table: string]: boolean | fieldMap;
@@ -69,6 +73,7 @@ export interface ExInMap {
 export interface ATFTable {
   sys_scope: GlideElement;
   sys_id: GlideElement;
+  step_config: GlideElement;
   inputs: any;
 }
 

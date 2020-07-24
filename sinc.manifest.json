@@ -66,6 +66,16 @@
           "name": "Get Current Scope",
           "sys_id": "3654cdc9db63fb004a8da5094b961918"
         },
+        "Push ATF File": {
+          "files": [
+            {
+              "name": "operation_script",
+              "type": "js"
+            }
+          ],
+          "name": "Push ATF File",
+          "sys_id": "47b3a937db8e50905b069098f4961994"
+        },
         "Get Manifest From Config": {
           "files": [
             {
@@ -77,6 +87,9 @@
           "sys_id": "e2b4410ddb63fb004a8da5094b9619ab"
         }
       }
+    },
+    "sys_atf_step": {
+      "records": {}
     }
   },
   "scope": "x_nuvo_sinc"
