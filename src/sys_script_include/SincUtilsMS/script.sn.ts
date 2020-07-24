@@ -321,7 +321,6 @@ export default class SincUtilsMS {
   ): SN.TableMap {
     let fileTableMap: SN.TableMap = {};
     for (let tableName in missingObj) {
-      gs.info(tableName);
       let tableGR = new GlideRecord<RecordTable>(tableName);
       let recordMap = missingObj[tableName];
       let tableOpts = tableOptions[tableName] || {};
