@@ -6,7 +6,11 @@ import {
   fileMapConfig,
   getTablesConfig,
   ITableOptions,
-  ITableOptionsMap
+  ITableOptionsMap,
+  ATFTable,
+  AppTable,
+  RecordTable,
+  DictionaryTable
 } from "../../../types";
 import {
   GlideAggregate,
@@ -33,8 +37,8 @@ export default class SincUtilsMS {
     };
   }
 
-  getScopeId(scopeName: string): string {
-    let appGR = new GlideRecord("sys_app");
+  getScopeId(scopeName: string) {
+    let appGR = new GlideRecord<AppTable>("sys_app");
     appGR.get("scope", scopeName);
     return appGR.getValue("sys_id");
   }
@@ -61,6 +65,41 @@ export default class SincUtilsMS {
     return tables;
   }
 
+  getServerScriptId() {
+    let gr = new GlideRecord<RecordTable>("sys_atf_step_config");
+    gr.addQuery("name", "Run Server Side Script");
+    gr.query();
+    gr.next();
+    return gr.getValue("sys_id");
+  }
+
+  getATFmanifest(scopeName: string) {
+    let scopeId = this.getScopeId(scopeName);
+    let scriptId = this.getServerScriptId();
+    let gr = new GlideRecord<ATFTable>("sys_atf_step");
+    gr.addQuery("sys_scope", scopeId);
+    gr.addQuery("step_config", scriptId);
+    gr.query();
+    let records: SN.TableConfigRecords = {};
+    while (gr.next()) {
+      let id = gr.getValue("sys_id") || "";
+      let script = gr.inputs.script;
+      script = script ? script.toString() : "";
+      records[id] = {
+        files: [
+          {
+            name: "inputs.script",
+            type: "js",
+            content: script
+          }
+        ],
+        name: id,
+        sys_id: id
+      };
+    }
+    return { records: records };
+  }
+
   getManifest(config: manifestConfig) {
     const {
       scopeName,
@@ -69,7 +108,7 @@ export default class SincUtilsMS {
       excludes,
       tableOptions = {}
     } = config;
-    const scopeId = this.getScopeId(scopeName);
+    const scopeId = this.getScopeId(scopeName) || "";
     let tables: SN.TableMap = {};
     let tableNames = this.getTableNames({ scopeId, includes, excludes });
     for (let i = 0; i < tableNames.length; i++) {
@@ -88,6 +127,7 @@ export default class SincUtilsMS {
       }
       tables[tableName] = tableMap;
     }
+    tables["sys_atf_step"] = this.getATFmanifest(scopeName);
     return {
       tables,
       scope: scopeName
@@ -115,7 +155,7 @@ export default class SincUtilsMS {
       return results;
     }
     let records: SN.TableConfigRecords = {};
-    let recGR = new GlideRecord(tableName);
+    let recGR = new GlideRecord<RecordTable>(tableName);
     recGR.addQuery("sys_scope", scopeId);
     recGR.addQuery("sys_class_name", tableName);
     if (tableOptions.query !== undefined) {
@@ -123,14 +163,14 @@ export default class SincUtilsMS {
     }
     recGR.query();
     while (recGR.next()) {
-      let files = Object.keys(fieldListForTable).map(key => {
-        fieldListForTable[key].content = recGR.getValue(key);
+      let files = Object.keys(fieldListForTable).map((key) => {
+        fieldListForTable[key].content = recGR.getValue(key) || undefined;
         let file: SN.File = {
           name: fieldListForTable[key].name,
           type: fieldListForTable[key].type
         };
         if (getContents) {
-          file.content = recGR.getValue(key);
+          file.content = recGR.getValue(key) || undefined;
         }
         return file;
       });
@@ -139,7 +179,7 @@ export default class SincUtilsMS {
       records[recName] = {
         files,
         name: recName,
-        sys_id: recGR.getValue("sys_id")
+        sys_id: recGR.getValue("sys_id") || ""
       };
     }
     let tableConfig: SN.TableConfig = {
@@ -149,7 +189,10 @@ export default class SincUtilsMS {
     return tableConfig;
   }
 
-  generateRecordName(recGR: GlideRecord, tableOptions: ITableOptions) {
+  generateRecordName(
+    recGR: GlideRecord<RecordTable>,
+    tableOptions: ITableOptions
+  ) {
     let recordName = recGR.getDisplayValue() || recGR.getValue("sys_id");
     if (tableOptions.displayField !== undefined) {
       recordName = recGR
@@ -175,7 +218,7 @@ export default class SincUtilsMS {
       }
     }
     if (!recordName || recordName === "") {
-      recordName = recGR.getValue("sys_id");
+      recordName = recGR.getValue("sys_id") || "";
     }
     return recordName.replace(/[\/\\]/g, "〳");
   }
@@ -205,7 +248,7 @@ export default class SincUtilsMS {
       return excludedFields;
     }
     let tableIncludes = includes[tableName] as fieldMap;
-    return excludedFields.filter(exField => {
+    return excludedFields.filter((exField) => {
       //if a field has been explicitly included we want to make sure it doesn't get filtered out
       let fieldIncluded = exField in tableIncludes;
       let overridden = () => typeof tableIncludes[exField] !== "boolean";
@@ -221,13 +264,13 @@ export default class SincUtilsMS {
   getFileMap(config: fileMapConfig) {
     const { tableName, includes, excludes } = config;
     let fieldList: { [fieldName: string]: SN.File } = {};
-    let dictGR = new GlideRecord("sys_dictionary");
+    let dictGR = new GlideRecord<DictionaryTable>("sys_dictionary");
     const tableHierarchy = new GlideTableHierarchy(tableName);
     if (tableHierarchy.isBaseClass() || tableHierarchy.isSoloClass()) {
       dictGR.addQuery("name", tableName);
     } else {
       const tableList: string[] = tableHierarchy.getTables();
-      const tableEQ = tableList.map(table => "name=" + table).join("^OR");
+      const tableEQ = tableList.map((table) => "name=" + table).join("^OR");
       dictGR.addEncodedQuery(tableEQ);
     }
     //determine excluded fields
@@ -241,14 +284,16 @@ export default class SincUtilsMS {
     }
     //get fields that fit within the typemap
     let typeQuery = Object.keys(this.typeMap)
-      .map(type => "internal_type=" + type)
+      .map((type) => "internal_type=" + type)
       .join("^OR");
     dictGR.addEncodedQuery(typeQuery);
     dictGR.query();
     while (dictGR.next()) {
       let field: SN.File = {
-        name: dictGR.getValue("element"),
-        type: this.typeMap[dictGR.getValue("internal_type")] as SN.FileType
+        name: dictGR.getValue("element") || "",
+        type: this.typeMap[
+          dictGR.getValue("internal_type") || ""
+        ] as SN.FileType
       };
       fieldList[field.name] = field;
     }
@@ -276,9 +321,14 @@ export default class SincUtilsMS {
   ): SN.TableMap {
     let fileTableMap: SN.TableMap = {};
     for (let tableName in missingObj) {
-      let tableGR = new GlideRecord(tableName);
+      let tableGR = new GlideRecord<RecordTable>(tableName);
       let recordMap = missingObj[tableName];
       let tableOpts = tableOptions[tableName] || {};
+      if (tableName === "sys_atf_step") {
+        tableOpts = {
+          displayField: "sys_id"
+        };
+      }
       let tableMap: SN.TableConfig = {
         records: {}
       };
@@ -287,11 +337,16 @@ export default class SincUtilsMS {
           let metaRecord: SN.MetaRecord = {
             name: this.generateRecordName(tableGR, tableOpts),
             files: [],
-            sys_id: tableGR.getValue("sys_id")
+            sys_id: tableGR.getValue("sys_id") || ""
           };
           for (let i = 0; i < recordMap[recordID].length; i++) {
             let file = recordMap[recordID][i];
-            file.content = tableGR.getValue(file.name);
+            if (tableName === "sys_atf_step") {
+              let script = tableGR.inputs.script;
+              file.content = script ? script.toString() : "";
+            } else {
+              file.content = tableGR.getValue(file.name) || "";
+            }
             metaRecord.files.push(file);
           }
           tableMap.records[
@@ -308,7 +363,7 @@ export default class SincUtilsMS {
     let session = (gs.getSession() as unknown) as GlideSession;
     if (typeof session !== "string") {
       let scopeID = session.getCurrentApplicationId();
-      let appGR = new GlideRecord("sys_app");
+      let appGR = new GlideRecord<AppTable>("sys_app");
       appGR.get(scopeID);
       return {
         scope: appGR.getValue("scope") || "Global",
@@ -319,15 +374,23 @@ export default class SincUtilsMS {
 
   getAppList(): SN.App[] {
     let results: SN.App[] = [];
-    let appGR = new GlideRecord("sys_app");
+    let appGR = new GlideRecord<AppTable>("sys_app");
     appGR.query();
     while (appGR.next()) {
       results.push({
-        displayName: appGR.getValue("name"),
-        scope: appGR.getValue("scope"),
-        sys_id: appGR.getValue("sys_id")
+        displayName: appGR.getValue("name") || "",
+        scope: appGR.getValue("scope") || "",
+        sys_id: appGR.getValue("sys_id") || ""
       });
     }
     return results;
+  }
+
+  pushATFfile(sys_id: string, script: string) {
+    let gr = new GlideRecord<ATFTable>("sys_atf_step");
+    gr.get(sys_id);
+    gr.inputs.script = script;
+    if (gr.update() != null) return true;
+    return false;
   }
 }

@@ -1,5 +1,6 @@
 import { SN, Sinc } from "@sincronia/types";
 import { TypedRESTAPIRequest } from "@nuvolo/servicenow-types/util";
+import { GlideRecord, GlideElement } from "@nuvolo/servicenow-types";
 export interface fieldMap {
   [fieldName: string]: SN.File;
 }
@@ -15,6 +16,10 @@ export interface IGetManifestOptions {
   tableOptions?: ITableOptionsMap;
   includes: ExInProp;
   excludes: ExInProp;
+}
+export interface IPushATFoptions {
+  sys_id: string;
+  file: string;
 }
 
 export interface ExInProp {
@@ -63,4 +68,30 @@ export interface getTablesConfig {
 export interface ExInMap {
   includes: ExInProp;
   excludes: ExInProp;
+}
+
+export interface ATFTable {
+  sys_scope: GlideElement;
+  sys_id: GlideElement;
+  step_config: GlideElement;
+  inputs: any;
+}
+
+export interface AppTable {
+  scope: GlideElement;
+  sys_id: GlideElement;
+  name: GlideElement;
+}
+
+export interface RecordTable {
+  sys_scope: GlideElement;
+  sys_class_name: GlideElement;
+  [FieldName: string]: GlideElement;
+  inputs: any;
+}
+
+export interface DictionaryTable {
+  name: GlideElement;
+  element: GlideElement;
+  internal_type: GlideElement;
 }

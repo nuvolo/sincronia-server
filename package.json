@@ -23,7 +23,7 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
     "@babel/preset-env": "^7.7.1",
     "@babel/preset-typescript": "^7.7.2",
-    "@nuvolo/servicenow-types": "0.0.3",
+    "@nuvolo/servicenow-types": "^0.2.0",
     "@sincronia/babel-plugin": "^0.2.1",
     "@sincronia/babel-plugin-remove-modules": "^0.2.3",
     "@sincronia/babel-preset-servicenow": "^0.2.2",
@@ -32,6 +32,6 @@
     "@sincronia/typescript-plugin": "^0.2.1"
   },
   "dependencies": {
-    "@sincronia/core": "^0.2.10"
+    "@sincronia/core": "^0.4.1"
   }
 }
