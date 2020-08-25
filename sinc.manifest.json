@@ -2,16 +2,6 @@
   "tables": {
     "sys_script_include": {
       "records": {
-        "SincUtilsMS": {
-          "files": [
-            {
-              "name": "script",
-              "type": "js"
-            }
-          ],
-          "name": "SincUtilsMS",
-          "sys_id": "4da2c589db63fb004a8da5094b9619a9"
-        },
         "SincUtils": {
           "files": [
             {
@@ -20,7 +10,7 @@
             }
           ],
           "name": "SincUtils",
-          "sys_id": "b3828589db63fb004a8da5094b9619b6"
+          "sys_id": "4da2c589db63fb004a8da5094b9619a9"
         }
       }
     },
@@ -74,7 +64,7 @@
             }
           ],
           "name": "Push ATF File",
-          "sys_id": "47b3a937db8e50905b069098f4961994"
+          "sys_id": "41c57caedb329c50ee7c2f625b9619f3"
         },
         "Get Manifest From Config": {
           "files": [
