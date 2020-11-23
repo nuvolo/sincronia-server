@@ -16,6 +16,7 @@ export interface IGetManifestOptions {
   tableOptions?: ITableOptionsMap;
   includes: ExInProp;
   excludes: ExInProp;
+  withFiles: boolean;
 }
 export interface IPushATFoptions {
   sys_id: string;
